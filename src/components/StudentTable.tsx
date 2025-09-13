@@ -63,8 +63,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onExportData,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterBranch, setFilterBranch] = useState('');
-  const [filterYear, setFilterYear] = useState('');
+  const [filterBranch, setFilterBranch] = useState('all');
+  const [filterYear, setFilterYear] = useState('all');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Student;
     direction: 'asc' | 'desc';
@@ -84,8 +84,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
         student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesBranch = filterBranch === '' || student.branch === filterBranch;
-      const matchesYear = filterYear === '' || student.year === filterYear;
+      const matchesBranch = filterBranch === 'all' || student.branch === filterBranch;
+      const matchesYear = filterYear === 'all' || student.year === filterYear;
       
       return matchesSearch && matchesBranch && matchesYear;
     });
@@ -187,7 +187,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 <SelectValue placeholder="Filter by Branch" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Branches</SelectItem>
+                <SelectItem value="all">All Branches</SelectItem>
                 {branches.map(branch => (
                   <SelectItem key={branch} value={branch}>{branch}</SelectItem>
                 ))}
@@ -199,7 +199,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 <SelectValue placeholder="Filter by Year" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Years</SelectItem>
+                <SelectItem value="all">All Years</SelectItem>
                 {years.map(year => (
                   <SelectItem key={year} value={year}>Year {year}</SelectItem>
                 ))}
@@ -210,8 +210,8 @@ const StudentTable: React.FC<StudentTableProps> = ({
               variant="outline" 
               onClick={() => {
                 setSearchTerm('');
-                setFilterBranch('');
-                setFilterYear('');
+                setFilterBranch('all');
+                setFilterYear('all');
                 setSortConfig(null);
               }}
               className="academic-input"
