@@ -1,6 +1,7 @@
 import React from 'react';
-import { Users, BarChart3, Settings, Home, Moon, Sun } from 'lucide-react';
+import { Users, BarChart3, Settings, Home, Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavigationProps {
   activeTab: string;
@@ -15,6 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({
   darkMode, 
   toggleDarkMode 
 }) => {
+  const { logout } = useAuth();
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'students', label: 'Students', icon: Users },
@@ -73,6 +75,15 @@ const Navigation: React.FC<NavigationProps> = ({
               ) : (
                 <Moon className="h-4 w-4" />
               )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="academic-input border-border/60 hover:border-destructive/50 hover:text-destructive"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </div>
