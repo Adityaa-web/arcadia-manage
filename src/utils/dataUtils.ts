@@ -119,12 +119,14 @@ export const parseCSV = (csvText: string): Student[] => {
 
 export const generateSampleData = (): Student[] => {
   const branches = [
-    'Computer Science Engineering',
-    'Information Technology',
-    'Electronics and Communication',
+    'Computer Science',
     'Electrical Engineering',
     'Mechanical Engineering',
-    'Civil Engineering'
+    'Civil Engineering',
+    'Electronics & Communication',
+    'Information Technology',
+    'Chemical Engineering',
+    'Biotechnology'
   ];
   
   const years = ['1', '2', '3', '4'];

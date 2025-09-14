@@ -7,6 +7,10 @@ import Reports from '@/components/Reports';
 import Settings from '@/components/Settings';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Building2, Filter } from 'lucide-react';
 import { exportToCSV, exportToJSON, parseCSV, generateSampleData } from '@/utils/dataUtils';
 
 interface Student {
@@ -30,7 +34,9 @@ const Index = () => {
   const [students, setStudents] = useLocalStorage<Student[]>('students', []);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [departmentFilter, setDepartmentFilter] = useState<string>('all');
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Initialize with sample data if empty
   useEffect(() => {
@@ -43,6 +49,13 @@ const Index = () => {
       });
     }
   }, []);
+
+  // Set initial department filter based on user role
+  useEffect(() => {
+    if (user?.role === 'teacher' && user.department) {
+      setDepartmentFilter(user.department);
+    }
+  }, [user]);
 
   // Apply dark mode
   useEffect(() => {
@@ -159,14 +172,31 @@ const Index = () => {
     localStorage.removeItem('students');
   };
 
+  // Filter students based on department
+  const filteredStudents = React.useMemo(() => {
+    if (departmentFilter === 'all') {
+      return students;
+    }
+    return students.filter(student => 
+      student.branch.toLowerCase().includes(departmentFilter.toLowerCase()) ||
+      student.branch === departmentFilter
+    );
+  }, [students, departmentFilter]);
+
+  // Get unique departments from students
+  const departments = React.useMemo(() => {
+    const uniqueDepts = [...new Set(students.map(s => s.branch))];
+    return uniqueDepts.sort();
+  }, [students]);
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Dashboard students={students} />;
+        return <Dashboard students={filteredStudents} />;
       case 'students':
         return (
           <StudentTable
-            students={students}
+            students={filteredStudents}
             onAddStudent={handleAddStudent}
             onEditStudent={handleEditStudent}
             onDeleteStudent={handleDeleteStudent}
@@ -175,7 +205,7 @@ const Index = () => {
           />
         );
       case 'reports':
-        return <Reports students={students} />;
+        return <Reports students={filteredStudents} />;
       case 'settings':
         return (
           <Settings
@@ -186,7 +216,7 @@ const Index = () => {
           />
         );
       default:
-        return <Dashboard students={students} />;
+        return <Dashboard students={filteredStudents} />;
     }
   };
 
@@ -200,6 +230,35 @@ const Index = () => {
       />
       
       <main className="container mx-auto px-4 py-8">
+        {/* Department Filter for Teachers */}
+        {user?.role === 'teacher' && (
+          <div className="mb-6 flex items-center gap-4 p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              <span className="font-medium">Department Filter:</span>
+            </div>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                {user.department && (
+                  <SelectItem value={user.department}>My Department ({user.department})</SelectItem>
+                )}
+                {departments.filter(dept => dept !== user.department).map((dept) => (
+                  <SelectItem key={dept} value={dept}>
+                    {dept}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-sm text-muted-foreground">
+              Showing {filteredStudents.length} of {students.length} students
+            </div>
+          </div>
+        )}
+        
         {renderContent()}
       </main>
 
