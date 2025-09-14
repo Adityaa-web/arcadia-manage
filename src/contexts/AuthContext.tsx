@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   role: 'teacher' | 'student';
+  department?: string;
   profile?: StudentProfile;
 }
 
@@ -20,8 +21,8 @@ interface StudentProfile {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile) => Promise<void>;
+  login: (email: string, password: string, department?: string) => Promise<void>;
+  signup: (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile, department?: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -57,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, department?: string) => {
     setIsLoading(true);
     try {
       // Simulate API call
@@ -75,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: foundUser.id,
         email: foundUser.email,
         role: foundUser.role,
+        department: foundUser.role === 'teacher' ? department : undefined,
         profile: foundUser.profile
       };
 
@@ -97,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile) => {
+  const signup = async (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile, department?: string) => {
     setIsLoading(true);
     try {
       // Simulate API call
@@ -115,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password, // In real app, this would be hashed
         role,
+        department: role === 'teacher' ? department : undefined,
         profile: role === 'student' ? profile : undefined
       };
 
@@ -125,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
+        department: newUser.department,
         profile: newUser.profile
       };
 

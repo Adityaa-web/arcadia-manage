@@ -4,24 +4,39 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Mail, Lock, Eye, EyeOff, Building2 } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'teacher' | 'student' | ''>('');
+  const [department, setDepartment] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const departments = [
+    'Computer Science',
+    'Electrical Engineering',
+    'Mechanical Engineering',
+    'Civil Engineering',
+    'Electronics & Communication',
+    'Information Technology',
+    'Chemical Engineering',
+    'Biotechnology'
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!email || !password || !role) return;
+    if (role === 'teacher' && !department) return;
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(email, password, role === 'teacher' ? department : undefined);
       navigate('/dashboard');
     } catch (error) {
       // Error is handled in the auth context
@@ -57,13 +72,47 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="role">I am a</Label>
+                <Select value={role} onValueChange={(value: 'teacher' | 'student') => setRole(value)}>
+                  <SelectTrigger className="academic-input">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="teacher">Teacher</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {role === 'teacher' && (
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <Select value={department} onValueChange={setDepartment}>
+                      <SelectTrigger className="pl-10 academic-input">
+                        <SelectValue placeholder="Select your department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            {dept}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="student@example.com"
+                    placeholder={role === 'student' ? "student@example.com" : "teacher@example.com"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 academic-input"
@@ -98,7 +147,7 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary transition-all duration-300"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !role || (role === 'teacher' && !department)}
               >
                 {isSubmitting ? "Signing in..." : "Sign In"}
               </Button>
