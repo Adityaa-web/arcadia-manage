@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StudentFlow</title>
+    <meta name="description" content="Login to StudentFlow - Academic Management System. Access your teacher or student account.">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="canonical" href="/login">
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center gradient-bg p-4">
+        <div class="w-full max-w-md space-y-8">
+            <!-- Header -->
+            <div class="text-center space-y-4">
+                <div class="flex justify-center">
+                    <div class="p-4 hero-gradient rounded-2xl shadow-lg">
+                        <svg class="h-8 w-8 text-primary-foreground icon-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-foreground">Welcome Back</h1>
+                    <p class="text-muted-foreground mt-2">Sign in to your StudentFlow account</p>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="academic-card">
+                <div class="card-header">
+                    <h2 class="text-2xl font-bold">Sign In</h2>
+                    <p class="text-muted-foreground">Enter your credentials to access your account</p>
+                </div>
+                <div class="card-content">
+                    <form id="login-form" class="space-y-4">
+                        <!-- Role Selection -->
+                        <div class="form-group">
+                            <label for="role" class="label">I am a</label>
+                            <select id="role" class="select academic-input" required>
+                                <option value="">Select your role</option>
+                                <option value="student">Student</option>
+                                <option value="teacher">Teacher</option>
+                            </select>
+                        </div>
+
+                        <!-- Department Selection (for teachers) -->
+                        <div id="department-group" class="form-group hidden">
+                            <label for="department" class="label">Department</label>
+                            <div class="relative">
+                                <svg class="absolute left-3 top-3 h-4 w-4 text-muted-foreground icon z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-2-5V6a2 2 0 012-2h2a2 2 0 012 2v1M9 7h1m-1 4h1" />
+                                </svg>
+                                <select id="department" class="select academic-input pl-10">
+                                    <option value="">Select your department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Electrical Engineering">Electrical Engineering</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Electronics & Communication">Electronics & Communication</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Chemical Engineering">Chemical Engineering</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email" class="label">Email</label>
+                            <div class="relative">
+                                <svg class="absolute left-3 top-3 h-4 w-4 text-muted-foreground icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                </svg>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    placeholder="student@example.com"
+                                    class="input academic-input pl-10"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label for="password" class="label">Password</label>
+                            <div class="relative">
+                                <svg class="absolute left-3 top-3 h-4 w-4 text-muted-foreground icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    class="input academic-input pl-10 pr-10"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    id="toggle-password"
+                                    class="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    <svg id="eye-icon" class="h-4 w-4 icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="login-btn"
+                            class="btn btn-gradient w-full"
+                        >
+                            <span id="login-btn-text">Sign In</span>
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-muted-foreground">
+                            Don't have an account?
+                            <a href="signup.html" class="font-medium text-primary hover:text-primary-glow transition-colors">
+                                Create account
+                            </a>
+                        </p>
+                    </div>
+
+                    <!-- Demo Credentials -->
+                    <div class="mt-6 p-4 bg-muted rounded-lg">
+                        <p class="text-xs font-medium text-muted-foreground mb-2">Demo Credentials:</p>
+                        <div class="space-y-1 text-xs text-muted-foreground">
+                            <p><strong>Teacher:</strong> teacher@example.com / password123</p>
+                            <p><strong>Student:</strong> student@example.com / password123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        // Login page specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('login-form');
+            const roleSelect = document.getElementById('role');
+            const departmentGroup = document.getElementById('department-group');
+            const departmentSelect = document.getElementById('department');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const eyeIcon = document.getElementById('eye-icon');
+            const loginBtn = document.getElementById('login-btn');
+            const loginBtnText = document.getElementById('login-btn-text');
+
+            // Show/hide department field based on role
+            roleSelect.addEventListener('change', function() {
+                const role = this.value;
+                if (role === 'teacher') {
+                    departmentGroup.classList.remove('hidden');
+                    departmentSelect.required = true;
+                    emailInput.placeholder = 'teacher@example.com';
+                } else {
+                    departmentGroup.classList.add('hidden');
+                    departmentSelect.required = false;
+                    departmentSelect.value = '';
+                    emailInput.placeholder = 'student@example.com';
+                }
+            });
+
+            // Toggle password visibility
+            togglePasswordBtn.addEventListener('click', function() {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    `;
+                } else {
+                    passwordInput.type = 'password';
+                    eyeIcon.innerHTML = `
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    `;
+                }
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    email: emailInput.value,
+                    password: passwordInput.value,
+                    role: roleSelect.value,
+                    department: departmentSelect.value
+                };
+
+                // Validation
+                if (!formData.role) {
+                    showToast('Please select your role', 'error');
+                    return;
+                }
+
+                if (formData.role === 'teacher' && !formData.department) {
+                    showToast('Please select your department', 'error');
+                    return;
+                }
+
+                // Show loading state
+                loginBtn.disabled = true;
+                loginBtnText.textContent = 'Signing in...';
+
+                try {
+                    const success = await authService.login(
+                        formData.email, 
+                        formData.password, 
+                        formData.role,
+                        formData.department
+                    );
+
+                    if (success) {
+                        showToast('Login successful!', 'success');
+                        
+                        // Redirect based on role
+                        setTimeout(() => {
+                            if (formData.role === 'student') {
+                                window.location.href = 'student-dashboard.html';
+                            } else {
+                                window.location.href = 'dashboard.html';
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    showToast(error.message || 'Login failed. Please try again.', 'error');
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtnText.textContent = 'Sign In';
+                }
+            });
+
+            // Check if already logged in
+            if (authService.isAuthenticated()) {
+                const user = authService.getCurrentUser();
+                if (user.role === 'student') {
+                    window.location.href = 'student-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
