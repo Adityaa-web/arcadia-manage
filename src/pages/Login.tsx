@@ -1,53 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, GraduationCap } from 'lucide-react';
+import { GraduationCap, Mail, Lock, Eye, EyeOff, Building2 } from 'lucide-react';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    role: '',
-    department: ''
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'teacher' | 'student' | ''>('');
+  const [department, setDepartment] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const { login, isAuthenticated, user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate(user.role === 'student' ? '/student-dashboard' : '/dashboard');
-    }
-  }, [isAuthenticated, user, navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.role) {
-      toast.error('Please select your role');
-      return;
-    }
-
-    if (formData.role === 'teacher' && !formData.department) {
-      toast.error('Please select your department');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await login(formData.email, formData.password, formData.role, formData.department);
-      toast.success('Login successful!');
-    } catch (error: any) {
-      toast.error(error.message || 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const departments = [
     'Computer Science',
@@ -60,156 +29,152 @@ const Login = () => {
     'Biotechnology'
   ];
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password || !role) return;
+    if (role === 'teacher' && !department) return;
+
+    setIsSubmitting(true);
+    try {
+      await login(email, password, role === 'teacher' ? department : undefined);
+      navigate('/dashboard');
+    } catch (error) {
+      // Error is handled in the auth context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/5 p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
-      </div>
-      
-      <div className="w-full max-w-md space-y-8 relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-accent-light/20 p-4">
+      <div className="w-full max-w-md space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4 animate-fade-in">
+        <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="p-4 hero-gradient rounded-2xl shadow-lg animate-bounce-in animate-pulse-glow">
+            <div className="p-4 bg-gradient-to-br from-primary to-primary-glow rounded-2xl shadow-lg">
               <GraduationCap className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">Welcome Back</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
             <p className="text-muted-foreground mt-2">Sign in to your StudentFlow account</p>
           </div>
         </div>
 
         {/* Login Form */}
-        <div className="academic-card card-hover animate-slide-up neon-border" style={{animationDelay: '0.4s'}}>
-          <div className="card-header">
-            <h2 className="text-2xl font-bold">Sign In</h2>
-            <p className="text-muted-foreground">Enter your credentials to access your account</p>
-          </div>
-          
-          <div className="card-content">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Role Selection */}
-              <div className="form-group animate-slide-in-right" style={{animationDelay: '0.6s'}}>
-                <label htmlFor="role" className="label">I am a</label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value, department: '' })}
-                  className="select academic-input hover-scale focus:scale-105 transition-all duration-300"
-                  required
-                >
-                  <option value="">Select your role</option>
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                </select>
+        <Card className="academic-card">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="role">I am a</Label>
+                <Select value={role} onValueChange={(value: 'teacher' | 'student') => setRole(value)}>
+                  <SelectTrigger className="academic-input">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="teacher">Teacher</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Department Selection (for teachers) */}
-              {formData.role === 'teacher' && (
-                <div className="form-group animate-bounce-in">
-                  <label htmlFor="department" className="label">Department</label>
-                  <select
-                    id="department"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                    className="select academic-input hover-scale focus:scale-105 transition-all duration-300"
-                    required
-                  >
-                    <option value="">Select your department</option>
-                    {departments.map((dept) => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
+              {role === 'teacher' && (
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                    <Select value={department} onValueChange={setDepartment}>
+                      <SelectTrigger className="pl-10 academic-input">
+                        <SelectValue placeholder="Select your department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            {dept}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
-
-              {/* Email */}
-              <div className="form-group animate-slide-in-right" style={{animationDelay: '0.8s'}}>
-                <label htmlFor="email" className="label">Email</label>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors" />
-                  <input
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
                     id="email"
                     type="email"
-                    placeholder={formData.role === 'teacher' ? 'teacher@example.com' : 'student@example.com'}
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="input academic-input pl-10 hover-scale focus:scale-105 transition-all duration-300"
+                    placeholder={role === 'student' ? "student@example.com" : "teacher@example.com"}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 academic-input"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password */}
-              <div className="form-group animate-slide-in-right" style={{animationDelay: '1s'}}>
-                <label htmlFor="password" className="label">Password</label>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors" />
-                  <input
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="input academic-input pl-10 pr-10 hover-scale focus:scale-105 transition-all duration-300"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10 academic-input"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-all duration-300 hover-scale"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={loading}
-                className="btn btn-gradient w-full h-12 disabled:opacity-50 btn-hover-lift animate-pulse-glow animate-slide-up"
-                style={{animationDelay: '1.2s'}}
+                className="w-full bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary transition-all duration-300"
+                disabled={isSubmitting || !role || (role === 'teacher' && !department)}
               >
-                {loading ? (
-                  <span className="flex items-center justify-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                    <span>Signing in...</span>
-                  </span>
-                ) : 'Sign In'}
-              </button>
+                {isSubmitting ? "Signing in..." : "Sign In"}
+              </Button>
             </form>
 
-            <div className="mt-6 text-center animate-slide-up" style={{animationDelay: '1.4s'}}>
+            <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
-                <button
-                  onClick={() => navigate('/signup')}
-                  className="font-medium text-primary hover:text-primary-glow transition-all duration-300 hover-scale"
+                <Link
+                  to="/signup"
+                  className="font-medium text-primary hover:text-primary-glow transition-colors"
                 >
                   Create account
-                </button>
+                </Link>
               </p>
             </div>
 
             {/* Demo Credentials */}
-            <div className="mt-6 p-4 glass-effect rounded-lg hover-scale animate-bounce-in" style={{animationDelay: '1.6s'}}>
-              <p className="text-xs font-medium text-primary mb-3">Demo Credentials:</p>
-              <div className="grid grid-cols-1 gap-3 text-xs">
-                <div className="p-3 bg-muted/50 rounded-lg hover-scale">
-                  <p className="font-medium text-primary">Teacher</p>
-                  <p className="text-muted-foreground">teacher@example.com / password123</p>
-                </div>
-                <div className="p-3 bg-muted/50 rounded-lg hover-scale">
-                  <p className="font-medium text-primary">Student</p>
-                  <p className="text-muted-foreground">student@example.com / password123</p>
-                </div>
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Demo Credentials:</p>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p><strong>Teacher:</strong> teacher@example.com / password123</p>
+                <p><strong>Student:</strong> student@example.com / password123</p>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

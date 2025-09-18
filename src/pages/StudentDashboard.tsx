@@ -1,177 +1,241 @@
-import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, Sun, Moon, User, BookOpen, Calendar, Award } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { 
+  GraduationCap, 
+  BookOpen, 
+  TrendingUp, 
+  Calendar, 
+  User, 
+  Award,
+  BarChart3,
+  Clock,
+  LogOut
+} from 'lucide-react';
 
 const StudentDashboard = () => {
   const { user, logout } = useAuth();
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  if (!user || !user.profile) {
+    return <div>Loading...</div>;
+  }
+
+  const { profile } = user;
+
+  // Calculate performance status
+  const getPerformanceStatus = (cgpa: number) => {
+    if (cgpa >= 8.5) return { label: 'Excellent', color: 'bg-success' };
+    if (cgpa >= 7.0) return { label: 'Good', color: 'bg-primary' };
+    if (cgpa >= 6.0) return { label: 'Average', color: 'bg-warning' };
+    return { label: 'Needs Improvement', color: 'bg-destructive' };
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+  const getAttendanceStatus = (attendance: number) => {
+    if (attendance >= 90) return { label: 'Excellent', color: 'bg-success' };
+    if (attendance >= 75) return { label: 'Good', color: 'bg-primary' };
+    if (attendance >= 60) return { label: 'Average', color: 'bg-warning' };
+    return { label: 'Low', color: 'bg-destructive' };
   };
+
+  const performanceStatus = getPerformanceStatus(profile.cgpa);
+  const attendanceStatus = getAttendanceStatus(profile.attendance);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/30 to-accent-light/20">
       {/* Header */}
-      <header className="bg-card border-b border-border shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-4">
-              <div className="p-2 hero-gradient rounded-lg">
-                <svg className="h-6 w-6 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
+      <div className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground p-6 shadow-lg">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-white/20 rounded-2xl">
+              <GraduationCap className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Student Portal</h1>
+              <p className="text-primary-foreground/80">Welcome back, {profile.name}</p>
+            </div>
+          </div>
+          <Button
+            onClick={logout}
+            variant="outline"
+            className="bg-white/20 border-white/30 text-primary-foreground hover:bg-white/30"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Personal Info Card */}
+        <Card className="academic-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-primary" />
+              <span>Personal Information</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Roll Number</p>
+                <p className="font-semibold">{profile.rollNo}</p>
               </div>
               <div>
-                <h1 className="text-xl font-bold">StudentFlow</h1>
-                <p className="text-xs text-muted-foreground">
-                  {user?.name} • {user?.profile?.rollNo} • {user?.role}
-                </p>
+                <p className="text-sm text-muted-foreground">Branch</p>
+                <p className="font-semibold">{profile.branch}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Year</p>
+                <p className="font-semibold">Year {profile.year}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-semibold">{user.email}</p>
               </div>
             </div>
-            
-            {/* Navigation and Actions */}
-            <div className="flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <button onClick={toggleTheme} className="btn btn-ghost" title="Toggle theme">
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
-              
-              {/* Logout Button */}
-              <button onClick={handleLogout} className="btn btn-outline">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
+
+        {/* Academic Performance Cards */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* CGPA Card */}
+          <Card className="academic-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  <span>Academic Performance</span>
+                </div>
+                <Badge className={performanceStatus.color}>
+                  {performanceStatus.label}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {profile.cgpa.toFixed(2)}
+                </div>
+                <p className="text-muted-foreground">Current CGPA</p>
+              </div>
+              <Progress 
+                value={(profile.cgpa / 10) * 100} 
+                className="h-3"
+              />
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>0.0</span>
+                <span>10.0</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Attendance Card */}
+          <Card className="academic-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <span>Attendance</span>
+                </div>
+                <Badge className={attendanceStatus.color}>
+                  {attendanceStatus.label}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2">
+                  {profile.attendance}%
+                </div>
+                <p className="text-muted-foreground">Overall Attendance</p>
+              </div>
+              <Progress 
+                value={profile.attendance} 
+                className="h-3"
+              />
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>0%</span>
+                <span>100%</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold">Welcome back, {user?.name}!</h2>
-          </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="academic-card">
+            <CardContent className="p-6 text-center">
+              <BookOpen className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold">Current Semester</h3>
+              <p className="text-2xl font-bold text-primary">Semester {profile.year}</p>
+            </CardContent>
+          </Card>
 
-          {/* Student Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="academic-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">CGPA</p>
-                  <p className="text-3xl font-bold">{user?.profile?.cgpa || '0.0'}</p>
-                </div>
-                <Award className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <div className="academic-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Attendance</p>
-                  <p className="text-3xl font-bold">{user?.profile?.attendance || 0}%</p>
-                </div>
-                <Calendar className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <div className="academic-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Year</p>
-                  <p className="text-3xl font-bold">{user?.profile?.year || 'N/A'}</p>
-                </div>
-                <BookOpen className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            <div className="academic-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Branch</p>
-                  <p className="text-lg font-bold">{user?.profile?.branch || 'N/A'}</p>
-                </div>
-                <User className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-          </div>
+          <Card className="academic-card">
+            <CardContent className="p-6 text-center">
+              <TrendingUp className="h-8 w-8 text-success mx-auto mb-2" />
+              <h3 className="font-semibold">Academic Rank</h3>
+              <p className="text-2xl font-bold text-success">
+                {profile.cgpa >= 8.5 ? 'Top 10%' : profile.cgpa >= 7.0 ? 'Top 25%' : 'Average'}
+              </p>
+            </CardContent>
+          </Card>
 
-          {/* Student Profile */}
-          <div className="academic-card">
-            <div className="card-header">
-              <h3 className="text-xl font-bold">Profile Information</h3>
-            </div>
-            <div className="card-content">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Full Name</p>
-                    <p className="font-medium">{user?.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Roll Number</p>
-                    <p className="font-medium">{user?.profile?.rollNo}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{user?.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{user?.profile?.phone || 'Not provided'}</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Branch</p>
-                    <p className="font-medium">{user?.profile?.branch}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Current Year</p>
-                    <p className="font-medium">{user?.profile?.year}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Date of Birth</p>
-                    <p className="font-medium">{user?.profile?.dateOfBirth || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-medium">{user?.profile?.address || 'Not provided'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="academic-card">
-            <div className="card-header">
-              <h3 className="text-xl font-bold">Quick Actions</h3>
-            </div>
-            <div className="card-content">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button className="btn btn-outline p-6 h-auto flex-col space-y-2">
-                  <BookOpen className="h-8 w-8" />
-                  <span>View Courses</span>
-                </button>
-                <button className="btn btn-outline p-6 h-auto flex-col space-y-2">
-                  <Calendar className="h-8 w-8" />
-                  <span>View Timetable</span>
-                </button>
-                <button className="btn btn-outline p-6 h-auto flex-col space-y-2">
-                  <Award className="h-8 w-8" />
-                  <span>View Grades</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <Card className="academic-card">
+            <CardContent className="p-6 text-center">
+              <Clock className="h-8 w-8 text-warning mx-auto mb-2" />
+              <h3 className="font-semibold">Status</h3>
+              <p className="text-2xl font-bold text-warning">Active</p>
+            </CardContent>
+          </Card>
         </div>
-      </main>
+
+        {/* Academic Insights */}
+        <Card className="academic-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span>Academic Insights</span>
+            </CardTitle>
+            <CardDescription>
+              Your performance overview and recommendations
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-semibold text-success mb-2">Strengths</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {profile.cgpa >= 7.0 && <li>• Strong academic performance</li>}
+                  {profile.attendance >= 75 && <li>• Good attendance record</li>}
+                  <li>• Consistent progress in {profile.branch}</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-semibold text-warning mb-2">Areas for Improvement</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  {profile.cgpa < 7.0 && <li>• Focus on improving CGPA</li>}
+                  {profile.attendance < 75 && <li>• Improve attendance rate</li>}
+                  <li>• Consider additional skill development</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div className="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+              <h4 className="font-semibold text-primary mb-2">Recommendations</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
+                {profile.cgpa < 7.0 && <p>• Schedule regular study sessions to improve your CGPA</p>}
+                {profile.attendance < 75 && <p>• Maintain consistent class attendance for better learning</p>}
+                <p>• Participate in department activities and technical events</p>
+                <p>• Consider joining study groups with your classmates</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

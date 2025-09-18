@@ -1,20 +1,30 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { initializeDemoUsers } from '@/utils/initializeDemoUsers';
 
 interface User {
   id: string;
   email: string;
-  name: string;
-  role: 'student' | 'teacher';
+  role: 'teacher' | 'student';
   department?: string;
-  profile?: any;
+  profile?: StudentProfile;
+}
+
+interface StudentProfile {
+  rollNo: string;
+  name: string;
+  branch: string;
+  year: string;
+  cgpa: number;
+  attendance: number;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string, role: string, department?: string) => Promise<boolean>;
-  signup: (email: string, password: string, role: string, profile: any, department?: string) => Promise<boolean>;
+  login: (email: string, password: string, department?: string) => Promise<void>;
+  signup: (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile, department?: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,108 +39,137 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  // Demo users data
-  const demoUsers = [
-    {
-      id: 'teacher-1',
-      email: 'teacher@example.com',
-      password: 'password123',
-      role: 'teacher' as const,
-      name: 'Dr. Sarah Johnson',
-      department: 'Computer Science'
-    },
-    {
-      id: 'student-1',
-      email: 'student@example.com',
-      password: 'password123',
-      role: 'student' as const,
-      name: 'John Smith',
-      profile: {
-        rollNo: 'CS21B001',
-        name: 'John Smith',
-        branch: 'Computer Science',
-        year: '3',
-        cgpa: 8.5,
-        attendance: 92,
-        email: 'student@example.com',
-        phone: '9876543210',
-        dateOfBirth: '2003-05-15',
-        address: '123 Student Street, City'
+  useEffect(() => {
+    // Initialize demo users
+    initializeDemoUsers();
+    
+    // Check for existing session
+    const storedUser = localStorage.getItem('auth_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        localStorage.removeItem('auth_user');
       }
     }
-  ];
-
-  // Initialize users in localStorage
-  useEffect(() => {
-    const existingUsers = localStorage.getItem('users');
-    if (!existingUsers) {
-      localStorage.setItem('users', JSON.stringify(demoUsers));
-    }
-
-    // Check for existing session
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      const userData = JSON.parse(currentUser);
-      setUser(userData);
-      setIsAuthenticated(true);
-    }
+    setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: string, department?: string): Promise<boolean> => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find((u: any) => u.email === email && u.password === password && u.role === role);
-    
-    if (foundUser) {
-      const userSession = { ...foundUser };
-      if (department && role === 'teacher') {
-        userSession.department = department;
-      }
-      delete userSession.password;
+  const login = async (email: string, password: string, department?: string) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setUser(userSession);
-      setIsAuthenticated(true);
-      localStorage.setItem('currentUser', JSON.stringify(userSession));
-      return true;
+      // Mock authentication - In real app, this would be Supabase auth
+      const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+      const foundUser = mockUsers.find((u: any) => u.email === email && u.password === password);
+      
+      if (!foundUser) {
+        throw new Error('Invalid credentials');
+      }
+
+      const userData = {
+        id: foundUser.id,
+        email: foundUser.email,
+        role: foundUser.role,
+        department: foundUser.role === 'teacher' ? department : undefined,
+        profile: foundUser.profile
+      };
+
+      setUser(userData);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${foundUser.role}!`,
+      });
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error instanceof Error ? error.message : "Invalid credentials",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    
-    throw new Error('Invalid credentials');
   };
 
-  const signup = async (email: string, password: string, role: string, profile: any, department?: string): Promise<boolean> => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find((u: any) => u.email === email);
-    
-    if (existingUser) {
-      throw new Error('User already exists');
+  const signup = async (email: string, password: string, role: 'teacher' | 'student', profile?: StudentProfile, department?: string) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+      
+      // Check if user already exists
+      if (mockUsers.find((u: any) => u.email === email)) {
+        throw new Error('User already exists');
+      }
+
+      const newUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        email,
+        password, // In real app, this would be hashed
+        role,
+        department: role === 'teacher' ? department : undefined,
+        profile: role === 'student' ? profile : undefined
+      };
+
+      mockUsers.push(newUser);
+      localStorage.setItem('mock_users', JSON.stringify(mockUsers));
+
+      const userData = {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        department: newUser.department,
+        profile: newUser.profile
+      };
+
+      setUser(userData);
+      localStorage.setItem('auth_user', JSON.stringify(userData));
+      
+      toast({
+        title: "Account created",
+        description: `Welcome to StudentFlow, ${role}!`,
+      });
+    } catch (error) {
+      toast({
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "Failed to create account",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-
-    const newUser = {
-      id: `${role}-${Date.now()}`,
-      email,
-      password,
-      role,
-      name: profile.name,
-      department: role === 'teacher' ? department : undefined,
-      profile: role === 'student' ? profile : undefined
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // Auto-login after signup
-    return await login(email, password, role, department);
   };
 
   const logout = () => {
     setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('auth_user');
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
+
+  const value = {
+    user,
+    login,
+    signup,
+    logout,
+    isLoading
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, signup, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
